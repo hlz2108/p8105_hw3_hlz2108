@@ -11,6 +11,8 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(ggplot2)
+library(p8105.datasets)
+
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
@@ -25,12 +27,50 @@ scale_colour_discrete = scale_color_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
+## Problem 0
+
+This “problem” focuses on structure of your submission, especially the use git and GitHub for reproducibility, R Projects to organize your work, R Markdown to write reproducible reports, relative paths to load data from local files, and reasonable naming structures for your files.
+
 ## Problem 1
 
 ```{r instacart_df}
-library(p8105.datasets)
 data("instacart")
 ```
+
+This dataset contains `r nrow(instacart)` rows and `r ncol(instacart)` columns.
+
+Observations are the level of items in order by user. 
+
+How many aisles, and which are most items ordered from?
+
+```{r aisle_count}
+instacart %>% 
+  count(aisle) %>% 
+  arrange(desc(n))
+```
+
+Let's make a plot
+
+```{r instacart_plot}
+instacart %>% 
+  count(aisle) %>% 
+  filter(n > 10000) %>% 
+  mutate(
+    aisle = factor(aisle),
+    aisle = fct_reorder(aisle,)
+  ) %>% 
+  ggplot(aes(x = aisle, y = n)) +
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+
+
+How many aisles are there, and which aisles are the most items ordered from?
+Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 
 ## Problem 2
 
