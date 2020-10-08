@@ -4,6 +4,19 @@ author: "Helen Zhang"
 date: "October 5, 2020"
 output: github_document
 ---
+### Due date
+
+Due: October 10 at 10:00pm. 
+
+### Points
+
+| Problem         | Points    |
+|:--------------- |:--------- |
+| Problem 0       | 20        |
+| Problem 1       | --        |
+| Problem 2       | 40        |
+| Problem 3       | 40        |
+| Optional survey | No points |
 Below is the code for setup:
 
 ```{r setup}
@@ -160,11 +173,7 @@ accel_df %>%
     breaks = c(0, 360, 720, 1080, 1440), 
     labels = c("12AM", "6AM", "12PM", "6PM", "11:59PM"),
     limits = c(0, 1440)
-    ) + 
-    viridis::scale_color_viridis(
-      name = "Day",
-      discrete = TRUE) + 
-  theme(legend.position = "bottom")
+    )
 ```
 
 Activity is lowest during sleeping hours, the individual appears to be more active on 
@@ -172,9 +181,46 @@ the weekends, in the evening hours around 8-10pm.
 
 ## Problem 3
 
+Loading dataset.
 ```{r ny_noaa_df}
 data("ny_noaa")
-
-separate
 ```
+
+The NY_NOAA dataset contains information taken from the NOAA National Climatic Data Center. It contains information from all New York state weather stations from January 1, 1981 through December 31, 2010.
+The NOAA dataset contains `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns.
+
+The variables in the data set are:
+
+* `id`: Weather station ID
+* `date`: Date of observation
+* `prcp`: Precipitation (tenths of mm)
+* `snow`: Snowfall (mm)
+* `snwd`: Snow depth (mm)
+* `tmax`: Maximum temperature (tenths of degrees C)
+* `tmin`: Minimum temperature (tenths of degrees C)
+
+Because not all weather stations in NY collect all these variables, the original dataset contains extensive amount of missing data.
+
+```{r noaa_tidy}
+ny_noaa %>% 
+  separate(date, into = c("year", "month", "day")) %>%
+  mutate(
+    prcp = prcp / 10 ,
+    tmax = as.numeric(tmax) / 10,
+    tmin = as.numeric(tmin) / 10,
+  ) %>% view
+```
+Several variables were converted into standard units. `prcp`, which was measured in tenths of mm, was converted into mm and `tmax` and `tmin`, which were measured in tenths of degrees C, was converted into degrees C.
+
+```{r snowfall_noaa}
+ny_noaa %>% 
+  count(snow) %>%
+  arrange(desc(n))
+```
+
+From the dataframe above, you can see that the most commonly observed value for snowfall was 0, indicating that on most days in NYS, it is not snowing. This makes sense as snow is most likely to occur during the winter season, and not year round.
+
+Assignment:
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 
