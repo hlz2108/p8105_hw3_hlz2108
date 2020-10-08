@@ -184,7 +184,7 @@ the weekends, in the evening hours around 8-10pm.
 
 ## Problem 3
 
-Loading dataset.
+Loading NY_NOAA dataset.
 ```{r ny_noaa_df}
 data("ny_noaa")
 ```
@@ -202,15 +202,27 @@ The variables in the data set are:
 * `tmax`: Maximum temperature (tenths of degrees C)
 * `tmin`: Minimum temperature (tenths of degrees C)
 
-Because not all weather stations in NY collect all these variables, the original dataset contains extensive amount of missing data.
-
 There are `r count(distinct(ny_noaa, id))` distinct weather stations in NYS.
 
-### LOOK AT MISSING DATA
+Because not all weather stations in NY collect all these variables, the original dataset contains extensive amount of missing data.
 
+To take a closer look at the amount of missing data, let's look at what proportion of data is missing for each variable.
 
+```{r missing_noaa}
+missing_noaa = ny_noaa %>% 
+  summarize(
+    missing_prcp = mean(is.na(prcp)),
+    missing_snow = mean(is.na(snow)),
+    missing_snwd = mean(is.na(snwd)),
+    missing_tmax = mean(is.na(tmax)),
+    missing_tmin = mean(is.na(tmin))
+    ) %>% 
+  knitr::kable()
+```
 
+From the table, we can see that there is quite a lot of missing data for `tmax` and `tmin`, up to 44% in each. `snow` and `snwd` have a smaller proportion of missing data. Missing data could influence the accuracy of further analysis, depending on when the missing data was collected.
 
+#### Data Cleaning
 
 ```{r noaa_tidy}
 noaa_tidy = ny_noaa %>% 
@@ -281,6 +293,7 @@ In comparing January vs. July, the average temps in January are substantially lo
 ```{r tmax_tmin_plot}
 tmax_tmin_p = ggplot(noaa_tidy, aes(x = tmin, y = tmax)) +
   geom_hex(bins = 40) +
+  geom_smooth()
   labs(
     title = "NY Temperatures (1981-2010)",
     x = "Min Temp (°C)",
@@ -310,7 +323,7 @@ snowfall_p
 tmax_tmin_p + snowfall_p
 ```
 
-The left hand side shows `tmax` vs `tmin` for the full dataset. It appears that most days have a maximum temperature of ~25°C and a minimum temperature of ~15°C.
+The left hand side shows `tmax` vs `tmin` for the full dataset. It appears that most days have a maximum temperature of ~25°C and a minimum temperature of ~15°C. The line helps the reader visually see the most common max and min temps for days. The relationship appears to be linear in the middle but slightly sigmoidal (S-shaped) at the ends.
 
 The right hand side shows the distribution of snowfall values that are greater than 0 and less than 100 seaparately by year.
-Each colored line represents a different year.
+Each colored line represents a different year. The snowfall distribution does not appear to vary significantly by year, and it is difficult to determine any trends from this plot.
