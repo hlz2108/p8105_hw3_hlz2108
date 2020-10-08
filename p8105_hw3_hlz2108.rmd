@@ -4,19 +4,6 @@ author: "Helen Zhang"
 date: "October 5, 2020"
 output: github_document
 ---
-### Due date
-
-Due: October 10 at 10:00pm. 
-
-### Points
-
-| Problem         | Points    |
-|:--------------- |:--------- |
-| Problem 0       | 20        |
-| Problem 1       | --        |
-| Problem 2       | 40        |
-| Problem 3       | 40        |
-| Optional survey | No points |
 Below is the code for setup:
 
 ```{r setup}
@@ -325,5 +312,5 @@ tmax_tmin_p + snowfall_p
 
 The left hand side shows `tmax` vs `tmin` for the full dataset. It appears that most days have a maximum temperature of ~25°C and a minimum temperature of ~15°C. The line helps the reader visually see the most common max and min temps for days. The relationship appears to be linear in the middle but slightly sigmoidal (S-shaped) at the ends.
 
-The right hand side shows the distribution of snowfall values that are greater than 0 and less than 100 seaparately by year.
+The right hand side shows the distribution of snowfall values that are greater than 0 and less than 100 separately by year.
 Each colored line represents a different year. The snowfall distribution does not appear to vary significantly by year, and it is difficult to determine any trends from this plot.
