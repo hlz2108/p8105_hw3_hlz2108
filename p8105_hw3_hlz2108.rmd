@@ -144,6 +144,8 @@ The accel data set contains `r nrow(accel_df)` rows and `r ncol(accel_df)` colum
 
 * _day_id_ is a `r class(pull(accel_df,day_id))` variable and indicates the day the accelerometer data was collected.
 
+* _day_ is a `r class(pull(accel_df,day))` variable that was created in order to make the original `day_id` variable easier to understand.
+
 * _week_ is a `r class(pull(accel_df, week))` variable and indicates the week the accelerometer data was collected.
 
 * _weekend_ is a `r class(pull(accel_df, weekend))` variable that indicates whether the information was collected on a weekend vs. a weekday.
@@ -202,25 +204,69 @@ The variables in the data set are:
 Because not all weather stations in NY collect all these variables, the original dataset contains extensive amount of missing data.
 
 ```{r noaa_tidy}
-ny_noaa %>% 
+noaa_tidy = ny_noaa %>% 
   separate(date, into = c("year", "month", "day")) %>%
   mutate(
     prcp = prcp / 10 ,
     tmax = as.numeric(tmax) / 10,
     tmin = as.numeric(tmin) / 10,
-  ) %>% view
+    year = as.numeric(year),
+    day = as.numeric(day),
+    month = recode_factor(month,
+          "01" = "January",
+          "02" = "February",
+          "03" = "March",
+          "04" = "April",
+          "05" = "May",
+          "06" = "June",
+          "07" = "July",
+          "08" = "August",
+          "09" = "September",
+          "10" = "October",
+          "11" = "November",
+          "12" = "December"
+    )) %>% 
+  relocate(year, month, day, everything())
 ```
+
 Several variables were converted into standard units. `prcp`, which was measured in tenths of mm, was converted into mm and `tmax` and `tmin`, which were measured in tenths of degrees C, was converted into degrees C.
 
 ```{r snowfall_noaa}
-ny_noaa %>% 
+noaa_tidy %>% 
   count(snow) %>%
   arrange(desc(n))
 ```
 
-From the dataframe above, you can see that the most commonly observed value for snowfall was 0, indicating that on most days in NYS, it is not snowing. This makes sense as snow is most likely to occur during the winter season, and not year round.
+From the dataframe above, you can see that the most commonly observed value for snowfall was 0, indicating that on most days in NYS, it is not snowing. This makes sense as snow is most likely to occur during the winter season (~3 months or so), and not year round.
 
-Assignment:
-Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+```{r plot_noaa_tmax}
+tmax_noaa = noaa_tidy %>% 
+  filter(month %in% c("January", "July")) %>% 
+  group_by(id, year, month) %>% 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE))
+
+ggplot(tmax_noaa, aes(x = year, y = mean_tmax, group = id, color = id)) +
+  geom_line() +
+  labs(
+    title = "Avg Max Temp in January and July in each NY Station Across Years",
+    x = "Year",
+    y = "Temp (°C)",
+    caption = "Data from the NOAA dataset"
+  ) +
+  scale_x_continuous(
+    breaks = c(1980, 1985, 1990, 1995, 2000, 2005, 2010)
+    ) +
+  facet_grid(. ~ month) +
+  theme(
+    legend.position = "none")
+
+```
+
+Is there any observable / interpretable structure? Any outliers?
+
+```{r}
+
+```
+
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 
