@@ -142,7 +142,7 @@ The accel data set contains `r nrow(accel_df)` rows and `r ncol(accel_df)` colum
 
 ```{r aggregate_accel}
 accel_df %>% 
-  group_by(day_id, day) %>%
+  group_by(day_id, day, week) %>%
   summarize(total_activity = sum(activity_count)) %>% 
   knitr::kable()
 ```
@@ -166,8 +166,7 @@ accel_df %>%
     )
 ```
 
-Activity is lowest during sleeping hours, the individual appears to be more active on 
-the weekends, in the evening hours around 8-10pm.
+Activity is lowest during sleeping hours (12-6AM). The individual appears to be more active in the evening hours around 8-10pm, particularly on Fridays and Saturdays. On Sundays, they appear to most active at midday at 12pm.
 
 ## Problem 3
 
@@ -214,7 +213,7 @@ From the table, we can see that there is quite a lot of missing data for `tmax` 
 ```{r noaa_tidy}
 noaa_tidy = ny_noaa %>% 
   janitor::clean_names() %>% 
-  separate(date, into = c("year", "month", "day")) %>%
+  separate(date, into = c("year", "month", "day"), convert = TRUE) %>%
   mutate(
     prcp = prcp / 10 ,
     tmax = as.numeric(tmax) / 10,
@@ -254,9 +253,9 @@ tmax_noaa = noaa_tidy %>%
   group_by(id, year, month) %>% 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE))
 
-ggplot(tmax_noaa, aes(x = year, y = mean_tmax, group = id, color = id)) +
+ggplot(tmax_noaa, aes(x = year, y = mean_tmax, color = month)) +
   geom_point(alpha = 0.2) +
-  geom_line(alpha = 0.5) +
+  geom_smooth(alpha = 0.5) +
   labs(
     title = "Avg Max Temp in January and July in each NY Station Across Years",
     x = "Year",
@@ -267,11 +266,12 @@ ggplot(tmax_noaa, aes(x = year, y = mean_tmax, group = id, color = id)) +
     breaks = c(1980, 1985, 1990, 1995, 2000, 2005, 2010)
     ) +
   facet_grid(. ~ month) +
+  scale_color_manual(values = c("navy", "orange")) +
   theme(
     legend.position = "none")
 ```
 
-The average max temp in January is usually within the -10-10°C range. The lowest max temperature recorded was ~-14°C. There does not appear to be a significant different in average max temperatures throughout the years. One could say that there may be a slight increase in max temperatures when comparing 1980 vs. 2010 but it is difficult to determine whether there is any significant difference from the two-panel plot generated.
+The average max temp in January is usually within the -10-10°C range. The lowest max temperature recorded was ~-14°C. There does not appear to be a significant different in average max temperatures throughout the years. By looking at the line generated from geom_smooth, one could say that there may be a slight increase in max temperatures when comparing 1980 vs. 2010 but it is difficult to determine whether there is any significant difference from the two-panel plot generated.
 
 Average max temperatures in July appear to be in the 25-30°C range. There is one outlier where the max temp for July was ~14°C but generally speaking, most values are within the 25-30°C range. There does not appear to be a significant difference in average max temperatures in July throughout the years. However, 2010 did have one of the highest average temperatures, as high as ~33°C.
 
@@ -280,7 +280,7 @@ In comparing January vs. July, the average temps in January are substantially lo
 ```{r tmax_tmin_plot}
 tmax_tmin_p = ggplot(noaa_tidy, aes(x = tmin, y = tmax)) +
   geom_hex(bins = 40) +
-  geom_smooth()
+  geom_smooth(se = F)
   labs(
     title = "NY Temperatures (1981-2010)",
     x = "Min Temp (°C)",
@@ -291,17 +291,19 @@ tmax_tmin_p = ggplot(noaa_tidy, aes(x = tmin, y = tmax)) +
 tmax_tmin_p
 ```
 
-```{r snowfall_plot}
+```{r snowfall_p}
 snowfall_p = noaa_tidy %>% 
   filter(snow > 0, snow < 100) %>% 
-  ggplot(aes(x = snow, color = factor(year))) +
-  geom_density() +
+  ggplot(aes(x = year, y = snow, fill = factor(year))) +
+  geom_boxplot() +
   labs(
-    title = "Distribution of NY Snowfall Values, 0-100mm (1981-2010)",
-    x = "Snowfall (mm)",
-    y = "Density"
+    title = "NY Snowfall Values, 0-100mm (1981-2010)",
+    x = "Year",
+    y = "Snowfall (mm)"
   ) +
-  theme(legend.position = "none")
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    legend.position = "none")
 
 snowfall_p
 ```
@@ -313,4 +315,4 @@ tmax_tmin_p + snowfall_p
 The left hand side shows `tmax` vs `tmin` for the full dataset. It appears that most days have a maximum temperature of ~25°C and a minimum temperature of ~15°C. The line helps the reader visually see the most common max and min temps for days. The relationship appears to be linear in the middle but slightly sigmoidal (S-shaped) at the ends.
 
 The right hand side shows the distribution of snowfall values that are greater than 0 and less than 100 separately by year.
-Each colored line represents a different year. The snowfall distribution does not appear to vary significantly by year, and it is difficult to determine any trends from this plot.
+Each boxplot represents a different year. The snowfall distribution does not appear to vary significantly by year, and it is difficult to determine any trends from this plot.
