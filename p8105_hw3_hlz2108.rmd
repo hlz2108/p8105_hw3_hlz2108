@@ -292,18 +292,18 @@ tmax_tmin_p
 ```
 
 ```{r snowfall_p}
+library(ggridges)
+
 snowfall_p = noaa_tidy %>% 
   filter(snow > 0, snow < 100) %>% 
-  ggplot(aes(x = year, y = snow, fill = factor(year))) +
-  geom_boxplot() +
+  ggplot(aes(x = snow, y = factor(year), fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) + 
+  scale_fill_viridis_c(name = "Snowfall (mm)", option = "A") + 
   labs(
     title = "NY Snowfall Values, 0-100mm (1981-2010)",
-    x = "Year",
-    y = "Snowfall (mm)"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-    legend.position = "none")
+    x = "Snowfall (mm)",
+    y = "Year"
+  )
 
 snowfall_p
 ```
